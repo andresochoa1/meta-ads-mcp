@@ -1,0 +1,17 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - metaAccessToken
+    properties:
+      metaAccessToken:
+        type: string
+        description: "Meta Graph API access token with ads_read permission"
+  commandFunction: |
+    (config) => ({
+      command: "meta-ads-mcp",
+      env: {
+        META_ACCESS_TOKEN: config.metaAccessToken
+      }
+    })
