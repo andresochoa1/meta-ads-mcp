@@ -4,10 +4,10 @@
   "description": "Security-first MCP server for Meta (Facebook/Instagram) Ads API. Zero-trust architecture with SSRF protection, token redaction, and rate limiting.",
   "author": {
     "name": "Andres Ochoa",
-    "url": "https://github.com/Andresochoa88"
+    "url": "https://github.com/andresochoa1"
   },
   "license": "MIT",
-  "repository": "https://github.com/Andresochoa88/meta-ads-mcp",
+  "repository": "https://github.com/andresochoa1/meta-ads-mcp",
   "tools": 18,
   "resources": 3,
   "prompts": 5,

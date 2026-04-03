@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any
 
 import httpx
 import structlog
 
+from meta_ads_mcp import __version__
+from meta_ads_mcp.api.rate_limiter import RateLimiter
 from meta_ads_mcp.config import ServerConfig
 from meta_ads_mcp.security import redact_sensitive_params, validate_id, validate_url
 
 logger = structlog.get_logger()
+
+# HTTP status codes that are safe to retry (transient errors)
+_RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
 
 
 class MetaAPIClient:
@@ -24,14 +30,19 @@ class MetaAPIClient:
     - Rate limiting is enforced per-account
     """
 
-    def __init__(self, config: ServerConfig) -> None:
+    def __init__(
+        self,
+        config: ServerConfig,
+        rate_limiter: RateLimiter | None = None,
+    ) -> None:
         self._config = config
         self._token = config.meta.access_token
         self._base_url = config.meta.graph_url
+        self._rate_limiter = rate_limiter
         self._client = httpx.Client(
             timeout=httpx.Timeout(30.0, connect=10.0),
             follow_redirects=False,  # Never follow redirects (SSRF protection)
-            headers={"User-Agent": "meta-ads-mcp/0.1.0"},
+            headers={"User-Agent": f"meta-ads-mcp/{__version__}"},
         )
 
     @property
@@ -56,9 +67,7 @@ class MetaAPIClient:
         url = f"{self._base_url}/{node_id}"
         return self._request(url, kwargs)
 
-    def get_edge(
-        self, parent_id: str, edge_name: str, **kwargs: Any
-    ) -> dict[str, Any]:
+    def get_edge(self, parent_id: str, edge_name: str, **kwargs: Any) -> dict[str, Any]:
         """Fetch an edge (collection) from a parent node.
 
         Args:
@@ -86,37 +95,54 @@ class MetaAPIClient:
         response.raise_for_status()
         return response.json()
 
-    def _request(
-        self, url: str, params: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
-        """Execute a GET request with security controls.
+    def _request(self, url: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+        """Execute a GET request with security controls and retry logic.
 
         - Token is added to params (not logged)
         - Errors never expose token
         - All requests logged with redacted params
+        - Rate limiter (if present) throttles requests
+        - Transient HTTP errors (429, 5xx) are retried with exponential backoff
         """
         full_params = self._build_params(self._prepare_params(params or {}))
         safe_params = redact_sensitive_params(full_params)
 
         logger.debug("api_request", url=url, params=safe_params)
 
-        try:
-            response = self._client.get(url, params=full_params)
-            response.raise_for_status()
-            data = response.json()
-            logger.debug("api_response", url=url, status=response.status_code)
-            return data
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                "api_error",
-                url=url,
-                status=e.response.status_code,
-                params=safe_params,  # SAFE — token redacted
-            )
-            raise
-        except httpx.RequestError as e:
-            logger.error("api_connection_error", url=url, error=str(e))
-            raise
+        attempt = 0
+        while True:
+            # Acquire rate limit token before each attempt
+            if self._rate_limiter is not None:
+                self._rate_limiter.acquire_or_wait()
+
+            try:
+                response = self._client.get(url, params=full_params)
+                response.raise_for_status()
+                data = response.json()
+                logger.debug("api_response", url=url, status=response.status_code)
+                return data
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+
+                # Check if we should retry this status code
+                if self._rate_limiter is not None and status in _RETRYABLE_STATUS_CODES:
+                    should_retry, delay = self._rate_limiter.should_retry(status, attempt)
+                    if should_retry:
+                        attempt += 1
+                        time.sleep(delay)
+                        continue
+
+                # Not retryable or retries exhausted — raise
+                logger.error(
+                    "api_error",
+                    url=url,
+                    status=status,
+                    params=safe_params,  # SAFE — token redacted
+                )
+                raise
+            except httpx.RequestError as e:
+                logger.error("api_connection_error", url=url, error=str(e))
+                raise
 
     def _prepare_params(self, params: dict[str, Any]) -> dict[str, Any]:
         """Prepare parameters for the Meta Graph API.

@@ -18,16 +18,12 @@ def get_accounts_resource(client: MetaAPIClient) -> str:
     Returns a JSON string with all ad accounts the token has access to,
     including name, ID, status, and currency.
     """
-    result = client.get_me(
-        fields="adaccounts{name,account_id,account_status,currency}"
-    )
+    result = client.get_me(fields="adaccounts{name,account_id,account_status,currency}")
     accounts = result.get("adaccounts", {}).get("data", [])
     return json.dumps({"accounts": accounts}, indent=2)
 
 
-def get_account_campaigns_resource(
-    client: MetaAPIClient, account_id: str
-) -> str:
+def get_account_campaigns_resource(client: MetaAPIClient, account_id: str) -> str:
     """Resource: meta://accounts/{id}/campaigns -- active campaigns for an account.
 
     Returns a JSON string with all active campaigns including name, status,
@@ -51,9 +47,7 @@ def get_account_campaigns_resource(
     return json.dumps({"campaigns": result.get("data", [])}, indent=2)
 
 
-def get_account_summary_resource(
-    client: MetaAPIClient, account_id: str
-) -> str:
+def get_account_summary_resource(client: MetaAPIClient, account_id: str) -> str:
     """Resource: meta://accounts/{id}/summary -- executive summary for an account.
 
     Returns a JSON string combining account details with last 7 days of

@@ -23,7 +23,9 @@ from mcp.types import (
     Tool,
 )
 
+from meta_ads_mcp import __version__
 from meta_ads_mcp.api.client import MetaAPIClient
+from meta_ads_mcp.api.rate_limiter import RateLimiter
 from meta_ads_mcp.config import load_config
 from meta_ads_mcp.prompts.analysis import PROMPTS, get_prompt_messages
 from meta_ads_mcp.resources import campaign_data
@@ -42,6 +44,7 @@ _client: MetaAPIClient | None = None
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
+
 
 @app.list_tools()
 async def list_tools() -> list[Tool]:
@@ -114,9 +117,7 @@ async def list_tools() -> list[Tool]:
         # --- Campaigns (3) ---
         Tool(
             name="list_campaigns",
-            description=(
-                "List campaigns for an ad account. Can filter by status."
-            ),
+            description=("List campaigns for an ad account. Can filter by status."),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -782,6 +783,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
 # Resources
 # ---------------------------------------------------------------------------
 
+
 @app.list_resources()
 async def list_resources() -> list[Resource]:
     """Register MCP resources for Meta Ads data."""
@@ -837,6 +839,7 @@ async def read_resource(uri: str) -> str:
 # Prompts
 # ---------------------------------------------------------------------------
 
+
 @app.list_prompts()
 async def list_prompts() -> list[Prompt]:
     """Register built-in analysis prompts."""
@@ -889,6 +892,7 @@ async def get_prompt(name: str, arguments: dict[str, str] | None = None) -> GetP
 # Server lifecycle
 # ---------------------------------------------------------------------------
 
+
 async def run() -> None:
     """Initialize and run the MCP server."""
     global _client
@@ -896,8 +900,9 @@ async def run() -> None:
     config = load_config()
     configure_logging(log_level=config.log_level, debug=config.debug)
 
-    _client = MetaAPIClient(config)
-    logger.info("server_starting", version="0.1.0", tools=18, resources=3, prompts=len(PROMPTS))
+    rate_limiter = RateLimiter(config.rate_limit)
+    _client = MetaAPIClient(config, rate_limiter=rate_limiter)
+    logger.info("server_starting", version=__version__, tools=18, resources=3, prompts=len(PROMPTS))
 
     try:
         async with stdio_server() as (read_stream, write_stream):

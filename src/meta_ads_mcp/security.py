@@ -6,24 +6,28 @@ from urllib.parse import urlparse
 import structlog
 
 # Domain allowlist — ONLY Meta's Graph API
-ALLOWED_DOMAINS: frozenset[str] = frozenset({
-    "graph.facebook.com",
-    "www.facebook.com",
-})
+ALLOWED_DOMAINS: frozenset[str] = frozenset(
+    {
+        "graph.facebook.com",
+        "www.facebook.com",
+    }
+)
 
 # Regex for valid Meta Ads IDs
 ID_PATTERN = re.compile(r"^(act_)?\d+$")
 
 # Fields that must NEVER appear in logs
-SENSITIVE_FIELDS: frozenset[str] = frozenset({
-    "access_token",
-    "token",
-    "secret",
-    "password",
-    "key",
-    "authorization",
-    "appsecret_proof",
-})
+SENSITIVE_FIELDS: frozenset[str] = frozenset(
+    {
+        "access_token",
+        "token",
+        "secret",
+        "password",
+        "key",
+        "authorization",
+        "appsecret_proof",
+    }
+)
 
 
 def validate_url(url: str) -> str:

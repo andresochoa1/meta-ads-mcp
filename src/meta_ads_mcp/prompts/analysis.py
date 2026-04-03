@@ -102,9 +102,7 @@ PROMPTS: dict[str, dict[str, Any]] = {
 }
 
 
-def get_prompt_messages(
-    prompt_name: str, arguments: dict[str, str]
-) -> list[dict[str, Any]]:
+def get_prompt_messages(prompt_name: str, arguments: dict[str, str]) -> list[dict[str, Any]]:
     """Generate the message sequence for a prompt.
 
     Each prompt generates a system + user message pair that instructs

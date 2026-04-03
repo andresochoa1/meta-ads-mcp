@@ -141,14 +141,13 @@ The "full jitter" strategy prevents thundering herd effects when multiple reques
 
 ## Dependency Minimalism
 
-The server has only **4 production dependencies**, all well-established and widely audited:
+The server has only **3 production dependencies**, all well-established and widely audited:
 
 | Dependency | Purpose | Weekly Downloads |
 |---|---|---|
 | `mcp` | MCP protocol implementation | Core protocol |
-| `facebook-business` | Meta's official Graph API SDK | Official SDK |
 | `structlog` | Structured logging with processors | 5M+ |
-| `httpx` | Modern HTTP client | 30M+ |
+| `httpx` | Secure HTTP client for Meta Graph API | 30M+ |
 
 No utility libraries, no frameworks, no transitive dependency trees. This minimizes the attack surface and reduces supply chain risk.
 
@@ -165,7 +164,7 @@ No utility libraries, no frameworks, no transitive dependency trees. This minimi
 | No redirect following | Yes | Not configured |
 | HTTPS enforcement | Yes | Implicit only |
 | Structured logging | Yes (structlog + JSON) | print/basic logging |
-| Dependency count | 4 | 5-15+ |
+| Dependency count | 3 | 5-15+ |
 
 ## Reporting Vulnerabilities
 
@@ -173,8 +172,8 @@ If you discover a security vulnerability, please **do not** open a public GitHub
 
 Instead, report it privately:
 
-1. **Email**: Send details to the repository owner via the contact information on the [GitHub profile](https://github.com/Andresochoa88)
-2. **GitHub Security Advisories**: Use the [private vulnerability reporting](https://github.com/Andresochoa88/meta-ads-mcp/security/advisories/new) feature
+1. **Email**: Send details to the repository owner via the contact information on the [GitHub profile](https://github.com/andresochoa1)
+2. **GitHub Security Advisories**: Use the [private vulnerability reporting](https://github.com/andresochoa1/meta-ads-mcp/security/advisories/new) feature
 
 Please include:
 

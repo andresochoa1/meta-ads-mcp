@@ -18,9 +18,15 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries",
 ]
+
+[project.urls]
+Homepage = "https://github.com/andresochoa1/meta-ads-mcp"
+Repository = "https://github.com/andresochoa1/meta-ads-mcp"
+Issues = "https://github.com/andresochoa1/meta-ads-mcp/issues"
+Documentation = "https://github.com/andresochoa1/meta-ads-mcp#readme"
+
 dependencies = [
     "mcp>=1.26.0",
-    "facebook-business>=22.0.0",
     "structlog>=24.0.0",
     "httpx>=0.27.0",
 ]

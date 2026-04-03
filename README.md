@@ -2,7 +2,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/github/actions/workflow/status/Andresochoa88/meta-ads-mcp/tests.yml?label=tests)](https://github.com/Andresochoa88/meta-ads-mcp/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/andresochoa1/meta-ads-mcp/tests.yml?label=tests)](https://github.com/andresochoa1/meta-ads-mcp/actions)
 
 **Security-first MCP server for Meta (Facebook/Instagram) Ads API.**
 
@@ -20,7 +20,7 @@ Existing MCP integrations for Meta Ads have significant security gaps: no SSRF p
 - **Zero-trust security** -- SSRF protection via domain allowlist, token redaction in all logs and errors, input validation on all IDs
 - **Rate limiting** with token bucket algorithm and exponential backoff with jitter
 - **Structured logging** with automatic secret redaction (structlog)
-- **Built on Meta's official** `facebook-business` SDK
+- **Built on Meta's Graph API** via `httpx` with zero-trust HTTP controls
 
 ## Quick Start
 
@@ -195,7 +195,7 @@ For the complete security documentation, see [SECURITY.md](SECURITY.md).
 ### Clone and install
 
 ```bash
-git clone https://github.com/Andresochoa88/meta-ads-mcp.git
+git clone https://github.com/andresochoa1/meta-ads-mcp.git
 cd meta-ads-mcp
 pip install -e ".[dev]"
 ```
